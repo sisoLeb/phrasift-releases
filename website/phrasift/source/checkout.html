@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Checkout — Phrasift</title>
+  <link rel="icon" href="mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="checkout.css">
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js" defer></script>
+  <script src="checkout.js" defer></script>
+</head>
+<body>
+  <header class="bar shell">
+    <a class="brand" href="./"><img src="mark.svg" width="34" height="34" alt="">Phrasift</a>
+    <a class="back" href="./#pricing"><span aria-hidden="true">←</span> Back to plans</a>
+  </header>
+  <main class="shell" id="checkout" data-mode="{{PADDLE_MODE}}" data-token="{{PADDLE_TOKEN}}"
+        data-standard="{{PADDLE_STANDARD}}" data-pro="{{PADDLE_PRO}}">
+    <p class="test-note" id="test-note" hidden><strong>Test checkout</strong> No real payment will be collected.</p>
+    <div class="columns">
+      <section class="order" aria-labelledby="checkout-title">
+        <p class="kicker">Order summary</p>
+        <h1 id="checkout-title">Choose your edition</h1>
+        <p class="order-detail" id="order-detail">One-time license for Windows and Mac.</p>
+        <nav class="editions" id="editions" aria-label="Editions">
+          <a id="edition-standard" href="?edition=standard"><strong>Standard</strong><span>€49.99</span></a>
+          <a id="edition-pro" href="?edition=pro"><strong>Pro</strong><span>€99.99</span></a>
+        </nav>
+        <ul class="features" id="features" hidden>
+          <li>Local video cleanup and personal voice memory</li>
+          <li>Translated captions, clean MP4 and editor exports</li>
+          <li id="pro-feature" hidden>Batch queue, watch folders, saved recipes and script comparison</li>
+          <li>Activate on up to two computers</li>
+        </ul>
+        <dl class="totals" id="totals" hidden>
+          <div id="subtotal-row" hidden><dt>Subtotal</dt><dd id="subtotal"></dd></div>
+          <div id="discount-row" hidden><dt>Discount</dt><dd id="discount"></dd></div>
+          <div id="tax-row" hidden><dt>Tax</dt><dd id="tax"></dd></div>
+          <div id="credit-row" hidden><dt>Credit</dt><dd id="credit"></dd></div>
+          <div class="total"><dt id="total-label">List price</dt><dd id="total"></dd></div>
+        </dl>
+      </section>
+      <section class="payment" aria-labelledby="payment-title">
+        <div class="payment-heading">
+          <span class="payment-icon" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10" width="15" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span>
+          <div><h2 id="payment-title">Secure checkout</h2><p>Payments processed by Paddle</p></div>
+        </div>
+        <p class="payment-status" id="checkout-status" role="status" aria-live="polite">Choose Standard or Pro to continue.</p>
+        <a class="retry" id="retry" href="" hidden>Reload checkout</a>
+        <div class="payment-frame" id="payment-frame"></div>
+        <noscript><p class="payment-status">Enable JavaScript to open Paddle checkout.</p></noscript>
+        <div class="delivery" id="delivery">
+          <h3>After payment</h3>
+          <p>Use the license key we email you to unlock Phrasift on Windows or Mac.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="footer shell">
+    <p>Phrasift · Local video editing for Windows and Mac</p>
+    <nav aria-label="Checkout help">
+      <a href="privacy.html#terms">Terms</a>
+      <a href="privacy.html#privacy">Privacy</a>
+      <a href="privacy.html#refunds">Refunds</a>
+      <a href="mailto:samirallam730@gmail.com">Support</a>
+    </nav>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "version": "0.6.1",
+  "channel": "release",
+  "seller": "Samir Allam",
+  "contact_email": "samirallam730@gmail.com",
+  "checkout_enabled": true,
+  "standard_price_eur": 49.99,
+  "pro_price_eur": 99.99,
+  "standard_checkout_url": "checkout.html?edition=standard",
+  "pro_checkout_url": "checkout.html?edition=pro",
+  "platforms": {
+    "windows": {
+      "label": "Windows",
+      "filename": "Phrasift-0.6.1-Setup.exe",
+      "ready": true,
+      "bytes": 707463900,
+      "sha256": "40fa7d6ab61b12f8221003eeb40bcfc3134e67deb78d7533c9c44de9db40b060"
+    },
+    "mac_arm64": {
+      "label": "Mac Â· Apple Silicon",
+      "filename": "Phrasift-0.6.1-macOS-arm64.dmg",
+      "ready": true,
+      "bytes": 727132372,
+      "sha256": "4570d9538a356383aca40c75363f2cb82d0dfe96c751015906133e4ff2084556"
+    },
+    "mac_x86_64": {
+      "label": "Mac Â· Intel",
+      "filename": "Phrasift-0.6.1-macOS-x86_64.dmg",
+      "ready": true,
+      "bytes": 747549085,
+      "sha256": "18b1da1e338cf711331f0a7beb7cef14695dd38bbb3b81dd7c5336932666d0aa"
+    }
+  },
+  "release_base": "https://github.com/sisoLeb/phrasift-releases/releases/download/v0.6.1"
+}
