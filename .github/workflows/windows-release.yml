@@ -14,8 +14,10 @@ jobs:
         mkdir -p "$RUNNER_TEMP/compiler"
         tar -xf compiler.tar.xz -C "$RUNNER_TEMP/compiler" --strip-components=1
         echo "$RUNNER_TEMP/compiler/bin" >> "$GITHUB_PATH"
-        command -v nasm
-    - run: bash scripts/build_windows_media.sh "$RUNNER_TEMP/windows-media"
+        command -v nasm || sudo apt-get install -y --no-install-recommends nasm
+    - run: |
+        sed -i 's#https://zlib.net/#https://github.com/madler/zlib/releases/download/v1.4/#' scripts/build_windows_media.sh
+        bash scripts/build_windows_media.sh "$RUNNER_TEMP/windows-media"
     - uses: actions/upload-artifact@v7
       with:
         name: windows-media

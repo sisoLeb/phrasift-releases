@@ -30,7 +30,11 @@ jobs:
           old = None
           for attempt in range(150):
               runs = get('actions/runs?branch=codex%2Fpaddle-public-release&per_page=20&fresh='+str(int(time.time())))['workflow_runs']
-              windows_run = next(run['id'] for run in runs if run['name']=='Build Phrasift Windows release')
+              windows = next((run for run in runs if run['name']=='Build Phrasift Windows release'), None)
+              if windows is None:
+                  time.sleep(30)
+                  continue
+              windows_run = windows['id']
               groups = {44379588295: {'mac (macos-15, arm64)', 'mac (macos-15-intel, x86_64)'},
                         windows_run: {'media', 'windows'}}
               states = []
