@@ -1,29 +1,24 @@
 name: Build Phrasift Windows release
 permissions:
   contents: read
+  actions: read
 jobs:
   media:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
     - uses: actions/checkout@v7
-    - name: Prepare the pinned portable compiler
-      run: |
-        curl -fsSL --retry 2 --max-time 180 https://github.com/mstorsjo/llvm-mingw/releases/download/20261117/llvm-mingw-20261117-ucrt-ubuntu-22.04-x86_64.tar.xz -o compiler.tar.xz
-        echo 'e7a15a49a2ea95e9f3d8a9d0cfabe5052a4b10fb4777cc54de5a8c27b64bb701  compiler.tar.xz' | sha256sum -c
-        mkdir -p "$RUNNER_TEMP/compiler"
-        tar -xf compiler.tar.xz -C "$RUNNER_TEMP/compiler" --strip-components=1
-        echo "$RUNNER_TEMP/compiler/bin" >> "$GITHUB_PATH"
-        command -v nasm || sudo apt-get install -y --no-install-recommends nasm
-        python -m pip install meson==1.9.0 ninja==1.13.0
-    - run: |
-        bash scripts/build_windows_release_media.sh "$RUNNER_TEMP/windows-media"
+    - name: Retrieve the verified media build
+      uses: actions/download-artifact@v7
+      with:
+        run-id: 44384842407
+        github-token: ${{ github.token }}
+        name: windows-media
+        path: media
     - uses: actions/upload-artifact@v7
       with:
         name: windows-media
-        path: |
-          ${{ runner.temp }}/windows-media/bin
-          ${{ runner.temp }}/windows-media/source
+        path: media
         retention-days: 7
         if-no-files-found: error
   windows:
@@ -56,6 +51,11 @@ jobs:
       shell: pwsh
       run: |
         $ErrorActionPreference = 'Stop'
+        python -c "import pathlib,pefile,ctypes; folder=pathlib.Path('build/windows-media/bin'); names=set(); [(names.update(i.dll.decode() for i in getattr(pefile.PE(str(p)), 'DIRECTORY_ENTRY_IMPORT', []))) for p in folder.iterdir() if p.suffix in ('.dll','.exe')]; exec('for name in sorted(names):\n if (folder/name).is_file(): continue\n try: ctypes.WinDLL(name)\n except OSError: print(\'Missing system dependency: \'+name,flush=True)')"
+        if (Get-Command Install-WindowsFeature -ErrorAction SilentlyContinue) {
+          $feature = Get-WindowsFeature Server-Media-Foundation
+          if (-not $feature.Installed) { Install-WindowsFeature Server-Media-Foundation }
+        }
         python -c "import subprocess; p='build/windows-media/bin/ffmpeg.exe'; d=subprocess.check_output([p,'-hide_banner','-decoders'],text=True); e=subprocess.check_output([p,'-hide_banner','-encoders'],text=True); assert 'libdav1d' in d and 'h264_mf' in e, 'Required CPU media support is missing'"
         if ($LASTEXITCODE) { throw 'CPU media compatibility check failed' }
         python -c "import hashlib,json,pathlib; p=pathlib.Path('build/windows-media'); s=p/'source'; files=[{'path':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in s.iterdir() if f.is_file()]; (s/'SOURCE-COMPLIANCE.json').write_text(json.dumps({'ffmpeg_sha256':hashlib.sha256((p/'bin/ffmpeg.exe').read_bytes()).hexdigest(),'reviewed':False,'publication_url':'https://github.com/sisoLeb/phrasift-releases/releases/download/v0.6.1/Phrasift-0.6.1-media-sources.zip','replacement_instructions':'FFmpeg and FFprobe are replaceable executables in the installed _internal/bin directory. Keep matching shared FFmpeg DLLs together. Build recipe and complete source archives are included.','sources':files},indent=2))"
