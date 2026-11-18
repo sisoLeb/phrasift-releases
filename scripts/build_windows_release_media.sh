@@ -62,7 +62,7 @@ cd "$ffmpeg"
     --disable-autodetect --disable-gpl --disable-nonfree --disable-network \
     --disable-doc --disable-debug --disable-ffplay --disable-pthreads \
     --enable-w32threads --enable-shared --disable-static --enable-zlib \
-    --enable-mediafoundation --enable-encoder=h264_mf --enable-libdav1d \
+    --enable-mediafoundation --enable-d3d11va --enable-encoder=h264_mf --enable-libdav1d \
     --pkg-config=pkg-config --pkg-config-flags=--static \
     --extra-cflags="-I$zlib -I$out/install/include" \
     --extra-ldflags="-L$zlib -L$out/install/lib -static-libgcc"
