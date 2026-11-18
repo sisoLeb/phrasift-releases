@@ -7,9 +7,14 @@ jobs:
     timeout-minutes: 40
     steps:
     - uses: actions/checkout@v7
-    - name: Install media cross-compiler
-      run: sudo apt-get install -y --no-install-recommends gcc-mingw-w64-x86-64-win32
-        nasm
+    - name: Prepare the pinned portable compiler
+      run: |
+        curl -fsSL --retry 2 --max-time 180 https://github.com/mstorsjo/llvm-mingw/releases/download/20261117/llvm-mingw-20261117-ucrt-ubuntu-22.04-x86_64.tar.xz -o compiler.tar.xz
+        echo 'e7a15a49a2ea95e9f3d8a9d0cfabe5052a4b10fb4777cc54de5a8c27b64bb701  compiler.tar.xz' | sha256sum -c
+        mkdir -p "$RUNNER_TEMP/compiler"
+        tar -xf compiler.tar.xz -C "$RUNNER_TEMP/compiler" --strip-components=1
+        echo "$RUNNER_TEMP/compiler/bin" >> "$GITHUB_PATH"
+        command -v nasm
     - run: bash scripts/build_windows_media.sh "$RUNNER_TEMP/windows-media"
     - uses: actions/upload-artifact@v7
       with:

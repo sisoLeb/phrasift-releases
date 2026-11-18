@@ -17,20 +17,25 @@ jobs:
         with:
           python-version: '3.12'
       - name: Wait for native installed-app checks
+        id: builds
         env:
           GH_TOKEN: ${{ github.token }}
         shell: python
         run: |
           import json, os, time, urllib.request
-          groups = {44379588295: {'mac (macos-15, arm64)', 'mac (macos-15-intel, x86_64)'},
-                    44381585884: {'media', 'windows'}}
+          def get(path):
+              url = 'https://api.github.com/repos/'+os.environ['GITHUB_REPOSITORY']+'/'+path
+              req = urllib.request.Request(url, headers={'Authorization': 'Bearer '+os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
+              with urllib.request.urlopen(req, timeout=30) as reply: return json.load(reply)
           old = None
           for attempt in range(150):
+              runs = get('actions/runs?branch=codex%2Fpaddle-public-release&per_page=20&fresh='+str(int(time.time())))['workflow_runs']
+              windows_run = next(run['id'] for run in runs if run['name']=='Build Phrasift Windows release')
+              groups = {44379588295: {'mac (macos-15, arm64)', 'mac (macos-15-intel, x86_64)'},
+                        windows_run: {'media', 'windows'}}
               states = []
               for run, expected in groups.items():
-                  url = f'https://api.github.com/repos/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{run}/jobs?fresh={int(time.time())}'
-                  req = urllib.request.Request(url, headers={'Authorization': 'Bearer '+os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
-                  with urllib.request.urlopen(req, timeout=30) as reply: jobs = json.load(reply)['jobs']
+                  jobs = get(f'actions/runs/{run}/jobs?fresh={int(time.time())}')['jobs']
                   selected = [job for job in jobs if job['name'] in expected]
                   if any(job['status']=='completed' and job['conclusion']!='success' for job in selected):
                       raise RuntimeError('A required native build failed. Fix it before publication.')
@@ -38,7 +43,9 @@ jobs:
               if states != old:
                   print(states, flush=True)
                   old = states
-              if len(states)==4 and all(status=='completed' and result=='success' for _,status,result in states): break
+              if len(states)==4 and all(status=='completed' and result=='success' for _,status,result in states):
+                  with open(os.environ['GITHUB_OUTPUT'], 'a') as out: out.write(f'windows_run={windows_run}\n')
+                  break
               time.sleep(30)
           else: raise TimeoutError('The native builds have not completed.')
       - uses: actions/download-artifact@v7
@@ -49,13 +56,13 @@ jobs:
           path: incoming/macos
       - uses: actions/download-artifact@v7
         with:
-          run-id: 44381585884
+          run-id: ${{ steps.builds.outputs.windows_run }}
           github-token: ${{ github.token }}
           name: Phrasift-Windows
           path: incoming/windows
       - uses: actions/download-artifact@v7
         with:
-          run-id: 44381585884
+          run-id: ${{ steps.builds.outputs.windows_run }}
           github-token: ${{ github.token }}
           name: windows-media
           path: incoming/windows-media
