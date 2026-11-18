@@ -52,7 +52,7 @@ jobs:
       run: |
         $ErrorActionPreference = 'Stop'
         New-Item -ItemType Directory -Path build/tools -Force | Out-Null
-        Invoke-WebRequest 'https://downloads.sourceforge.net/project/nsis/NSIS%203/3.13/nsis-3.13.zip' -OutFile build/tools/nsis-3.13.zip
+        Invoke-WebRequest 'https://github.com/tauri-apps/binary-releases/releases/download/nsis-3.13/nsis-3.13.zip' -OutFile build/tools/nsis-3.13.zip
         $hash = (Get-FileHash build/tools/nsis-3.13.zip -Algorithm SHA256).Hash.ToLowerInvariant()
         if ($hash -ne 'ba63dffc4410ee89193e1cb5a41989991bd77c61068da17e3156d136b7b0b3d8') { throw 'Installer compiler checksum mismatch' }
         Expand-Archive -LiteralPath build/tools/nsis-3.13.zip -DestinationPath build/tools
