@@ -1,0 +1,132 @@
+name: Build Phrasift Windows release
+permissions:
+  contents: read
+jobs:
+  media:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+    - uses: actions/checkout@v7
+    - name: Install media cross-compiler
+      run: sudo apt-get install -y --no-install-recommends gcc-mingw-w64-x86-64-win32
+        nasm
+    - run: bash scripts/build_windows_media.sh "$RUNNER_TEMP/windows-media"
+    - uses: actions/upload-artifact@v7
+      with:
+        name: windows-media
+        path: '${{ runner.temp }}/windows-media/bin
+
+          ${{ runner.temp }}/windows-media/source
+
+          '
+        retention-days: 7
+        if-no-files-found: error
+  windows:
+    needs: media
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v7
+      with:
+        python-version: '3.12'
+        architecture: x64
+    - run: python -m pip install cryptography==50.0.2
+    - name: Decrypt private build input
+      env:
+        SOURCE_KEY: ${{ secrets.PHRASIFT_BUILD_KEY_061 }}
+      run: python scripts/decrypt_build_input.py
+    - uses: actions/download-artifact@v7
+      with:
+        name: windows-media
+        path: private-source/Phrasift-Mac-Build-Source/build/windows-media
+    - name: Prepare build dependencies and offline assets
+      working-directory: private-source/Phrasift-Mac-Build-Source
+      run: 'python -m pip install --only-binary=:all: --no-binary=proxy-tools -r requirements-build.txt
+
+        python engine.py --download-model base
+
+        python scripts/prepare_caption_assets.py --download
+
+        '
+    - name: Package Windows app and installer
+      working-directory: private-source/Phrasift-Mac-Build-Source
+      shell: pwsh
+      run: '$ErrorActionPreference = ''Stop''
+
+        python -c "import hashlib,json,pathlib; p=pathlib.Path(''build/windows-media'');
+        s=p/''source''; files=[{''path'':f.name,''sha256'':hashlib.sha256(f.read_bytes()).hexdigest()}
+        for f in s.iterdir() if f.is_file()]; (s/''SOURCE-COMPLIANCE.json'').write_text(json.dumps({''ffmpeg_sha256'':hashlib.sha256((p/''bin/ffmpeg.exe'').read_bytes()).hexdigest(),''reviewed'':False,''publication_url'':''https://github.com/sisoLeb/phrasift-releases/releases/download/v0.6.1/Phrasift-0.6.1-media-sources.zip'',''replacement_instructions'':''FFmpeg
+        and FFprobe are replaceable executables in the installed _internal/bin directory.
+        Keep matching shared FFmpeg DLLs together. Build recipe and complete source
+        archives are included.'',''sources'':files},indent=2))"
+
+        if ($LASTEXITCODE) { throw ''Media source manifest failed'' }
+
+        python scripts/package_app.py --ffmpeg build/windows-media/bin/ffmpeg.exe
+        --release-config release-config.json --source-bundle build/windows-media/source
+        --no-zip
+
+        if ($LASTEXITCODE) { throw ''App packaging failed'' }
+
+        $nsis = ''C:/Program Files (x86)/NSIS/makensis.exe''
+
+        if (-not (Test-Path -LiteralPath $nsis)) { throw ''Hosted runner is missing
+        NSIS'' }
+
+        python scripts/build_installer.py --compiler $nsis --app-dir dist/Phrasift
+
+        if ($LASTEXITCODE) { throw ''Installer packaging failed'' }
+
+        '
+    - name: Verify installed Windows trial
+      working-directory: private-source/Phrasift-Mac-Build-Source
+      shell: pwsh
+      run: '$ErrorActionPreference = ''Stop''
+
+        New-Item -ItemType Directory -Path tests -Force | Out-Null
+
+        Add-Type -AssemblyName System.Speech
+
+        $voice = New-Object System.Speech.Synthesis.SpeechSynthesizer
+
+        $voice.SetOutputToWaveFile((Join-Path (Get-Location) ''tests/synthetic.wav''))
+
+        $voice.Speak(''This is a local video test. Um, I am trying the cleanup. This
+        recording stays on my computer.'')
+
+        $voice.Dispose()
+
+        & build/windows-media/bin/ffmpeg.exe -hide_banner -loglevel error -f lavfi
+        -i color=c=0x24202c:s=640x360:r=30 -i tests/synthetic.wav -shortest -c:v mpeg4
+        -q:v 5 -c:a aac tests/test4.mp4
+
+        if ($LASTEXITCODE) { throw ''Synthetic fixture generation failed'' }
+
+        python scripts/validate_windows_licensing.py --app-dir dist/Phrasift --expected-store-config
+        release-config.json
+
+        if ($LASTEXITCODE) { throw ''Installed app validation failed'' }
+
+        '
+    - uses: actions/upload-artifact@v7
+      with:
+        name: Phrasift-Windows
+        path: 'private-source/Phrasift-Mac-Build-Source/dist/*Setup.exe
+
+          private-source/Phrasift-Mac-Build-Source/dist/*.sha256
+
+          private-source/Phrasift-Mac-Build-Source/dist/*.build-info.json
+
+          private-source/Phrasift-Mac-Build-Source/validation/licensing/*/report.json
+
+          '
+        if-no-files-found: error
+        retention-days: 7
+'on':
+  push:
+    branches:
+    - codex/paddle-public-release
+    paths:
+    - .github/workflows/windows-release.yml
+  workflow_dispatch: null
