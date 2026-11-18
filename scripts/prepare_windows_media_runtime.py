@@ -1,6 +1,7 @@
 """Bundle the pinned compiler runtime required by the Windows media tools."""
 import argparse
 import hashlib
+import json
 from pathlib import Path
 import shutil
 import tarfile
@@ -30,6 +31,7 @@ def main():
                 raise ValueError('Compiler runtime archive checksum mismatch')
         copied = []
         license_count = 0
+        notice_index = {}
         with tarfile.open(archive) as bundle:
             for entry in bundle.getmembers():
                 if not entry.isfile():
@@ -39,7 +41,11 @@ def main():
                     destination = media/'bin'/name
                     copied.append(name)
                 elif name.upper().startswith(('LICENSE', 'COPYING')):
-                    destination = notices/entry.name.replace('/', '__')
+                    # Keep installer paths below Windows' legacy path limit while
+                    # preserving the original archive location in an index.
+                    short_name = hashlib.sha256(entry.name.encode()).hexdigest()[:16] + '-' + name[:48]
+                    destination = notices/short_name
+                    notice_index[short_name] = entry.name
                     license_count += 1
                 else:
                     continue
@@ -47,6 +53,7 @@ def main():
                     shutil.copyfileobj(source, target)
         if 'libc++.dll' not in copied or not license_count:
             raise ValueError('The compiler runtime or its license notices are missing')
+        (notices/'index.json').write_text(json.dumps(notice_index, indent=2), encoding='utf-8')
     shutil.copy2(__file__, notices/'prepare_windows_media_runtime.py')
     print('Bundled compiler runtime and license notices. '+', '.join(copied))
 

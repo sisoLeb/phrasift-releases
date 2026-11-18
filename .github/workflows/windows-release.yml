@@ -56,7 +56,7 @@ jobs:
         $hash = (Get-FileHash build/tools/nsis-3.13.zip -Algorithm SHA256).Hash.ToLowerInvariant()
         if ($hash -ne 'ba63dffc4410ee89193e1cb5a41989991bd77c61068da17e3156d136b7b0b3d8') { throw 'Installer compiler checksum mismatch' }
         Expand-Archive -LiteralPath build/tools/nsis-3.13.zip -DestinationPath build/tools
-    - name: Package Windows app and installer
+    - name: Package Windows app and installer with portable notice paths
       working-directory: private-source/Phrasift-Mac-Build-Source
       shell: pwsh
       run: |
