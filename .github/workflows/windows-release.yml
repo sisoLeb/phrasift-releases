@@ -46,6 +46,16 @@ jobs:
         python -m pip install --only-binary=:all: --no-binary=proxy-tools -r requirements-build.txt
         python engine.py --download-model base
         python scripts/prepare_caption_assets.py --download
+    - name: Prepare the verified installer compiler
+      working-directory: private-source/Phrasift-Mac-Build-Source
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        New-Item -ItemType Directory -Path build/tools -Force | Out-Null
+        Invoke-WebRequest 'https://downloads.sourceforge.net/project/nsis/NSIS%203/3.13/nsis-3.13.zip' -OutFile build/tools/nsis-3.13.zip
+        $hash = (Get-FileHash build/tools/nsis-3.13.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($hash -ne 'ba63dffc4410ee89193e1cb5a41989991bd77c61068da17e3156d136b7b0b3d8') { throw 'Installer compiler checksum mismatch' }
+        Expand-Archive -LiteralPath build/tools/nsis-3.13.zip -DestinationPath build/tools
     - name: Package Windows app and installer
       working-directory: private-source/Phrasift-Mac-Build-Source
       shell: pwsh
@@ -64,8 +74,8 @@ jobs:
         if ($LASTEXITCODE) { throw 'Media source manifest failed' }
         python scripts/package_app.py --ffmpeg build/windows-media/bin/ffmpeg.exe --release-config release-config.json --source-bundle build/windows-media/source --no-zip
         if ($LASTEXITCODE) { throw 'App packaging failed' }
-        $nsis = 'C:/Program Files (x86)/NSIS/makensis.exe'
-        if (-not (Test-Path -LiteralPath $nsis)) { throw 'Hosted runner is missing NSIS' }
+        $nsis = 'build/tools/nsis-3.13/makensis.exe'
+        if (-not (Test-Path -LiteralPath $nsis)) { throw 'Installer compiler is missing' }
         python scripts/build_installer.py --compiler $nsis --app-dir dist/Phrasift
         if ($LASTEXITCODE) { throw 'Installer packaging failed' }
         python -c "import shutil; shutil.make_archive('dist/Phrasift-0.6.1-Windows-media-sources','zip','build/windows-media/source')"
