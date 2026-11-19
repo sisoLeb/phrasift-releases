@@ -13,22 +13,22 @@
       "label": "Windows",
       "filename": "Phrasift-0.6.1-Setup.exe",
       "ready": true,
-      "bytes": 707463900,
-      "sha256": "40fa7d6ab61b12f8221003eeb40bcfc3134e67deb78d7533c9c44de9db40b060"
+      "bytes": 688461927,
+      "sha256": "62832f5de2159c95e62f7f48be8de8456d318dda3bc01d438ebc9aa451039131"
     },
     "mac_arm64": {
       "label": "Mac Â· Apple Silicon",
       "filename": "Phrasift-0.6.1-macOS-arm64.dmg",
       "ready": true,
-      "bytes": 727132372,
-      "sha256": "4570d9538a356383aca40c75363f2cb82d0dfe96c751015906133e4ff2084556"
+      "bytes": 728827767,
+      "sha256": "91b3f998274ed31dbea3cf5022b4bf67fb8960fe5cad6f1cd55ede09b7f87d91"
     },
     "mac_x86_64": {
       "label": "Mac Â· Intel",
       "filename": "Phrasift-0.6.1-macOS-x86_64.dmg",
       "ready": true,
-      "bytes": 747549085,
-      "sha256": "18b1da1e338cf711331f0a7beb7cef14695dd38bbb3b81dd7c5336932666d0aa"
+      "bytes": 752044601,
+      "sha256": "64759e36b90d39298ca40fc265476df8ee7fcd810ef52492a9e609bdbb937a64"
     }
   },
   "release_base": "https://github.com/sisoLeb/phrasift-releases/releases/download/v0.6.1"
