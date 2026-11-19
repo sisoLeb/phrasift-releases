@@ -139,10 +139,10 @@ def prepare(inputs, artifacts, source, live_config=None, commercial=False, paddl
               'STANDARD_CHECKOUT': manifest['standard_checkout_url'] or '#download',
               'PRO_CHECKOUT': manifest['pro_checkout_url'] or '#download'}
     values.update({
-        'MAIN_CTA': 'Buy Phrasift' if commercial else ('Test checkout' if has_checkout else 'Download the free trial'),
-        'MAIN_CTA_TARGET': '#pricing' if has_checkout else '#download',
-        'SECONDARY_CTA': 'Download installers' if has_checkout else 'Compare editions',
-        'SECONDARY_CTA_TARGET': '#download' if has_checkout else '#pricing',
+        'MAIN_CTA': 'Start free 30-day trial',
+        'MAIN_CTA_TARGET': '#download',
+        'SECONDARY_CTA': 'See how it works',
+        'SECONDARY_CTA_TARGET': '#workflow',
     })
     for edition, label, price in [('STANDARD', 'Standard', '€49.99'), ('PRO', 'Pro', '€99.99')]:
         values[f'{edition}_CTA'] = f'Buy Phrasift {label} — {price}' if commercial else (
