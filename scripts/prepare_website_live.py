@@ -130,13 +130,12 @@ def prepare(inputs, artifacts, source, live_config=None, commercial=False, paddl
     if any(type(cpu.get(field)) not in (int,float) or not math.isfinite(cpu[field]) or cpu[field]<=0 for field in numeric.values()):
         raise ValueError('Hardware evidence needs positive, finite measured values.')
     has_checkout = bool(paddle or live)
-    notice = 'Live license checkout.' if commercial else (
+    notice = '' if commercial else (
         'Test checkout only. No real payment will be collected.' if has_checkout
         else 'The free trial is available. License purchases are coming soon.'
     )
-    if unsigned or not commercial:
-        notice += ' Windows downloads are unsigned. Mac downloads are locally signed and have no Apple notarization. Your system may ask for confirmation on first launch.'
-    values = {'VERSION': version, 'RELEASE_BASE': base, 'RELEASE_NOTICE': notice,
+    notice_block = f'      <p class="release-notice">{html.escape(notice)}</p>\n' if notice else ''
+    values = {'VERSION': version, 'RELEASE_BASE': base,
               'STANDARD_CHECKOUT': manifest['standard_checkout_url'] or '#download',
               'PRO_CHECKOUT': manifest['pro_checkout_url'] or '#download'}
     values.update({
@@ -171,6 +170,8 @@ def prepare(inputs, artifacts, source, live_config=None, commercial=False, paddl
         names.extend(['checkout.html', 'checkout.css', 'checkout.js'])
     for name in names:
         text = (source / name).read_text(encoding='utf-8')
+        if name == 'index.html':
+            text = text.replace('{{RELEASE_NOTICE_BLOCK}}\n', notice_block)
         if paddle and name == '_headers':
             text = text.replace("script-src 'self';", "script-src 'self' https://cdn.paddle.com;")
             text = text.replace("connect-src 'self';", "connect-src 'self' https://*.paddle.com; frame-src https://*.paddle.com;")
