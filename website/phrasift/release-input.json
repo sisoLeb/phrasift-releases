@@ -1,5 +1,5 @@
 {
-  "version": "0.6.2",
+  "version": "0.6.3",
   "channel": "release",
   "seller": "Samir Allam",
   "contact_email": "samirallam730@gmail.com",
@@ -11,25 +11,25 @@
   "platforms": {
     "windows": {
       "label": "Windows",
-      "filename": "Phrasift-0.6.2-Setup.exe",
-      "ready": true,
-      "bytes": 688032684,
-      "sha256": "49f77060853f55876c5416edd1971fdfa5b2e3489a13a83b790e9b994c3914be"
+      "filename": "Phrasift-0.6.3-Setup.exe",
+      "ready": false,
+      "bytes": 0,
+      "sha256": ""
     },
     "mac_arm64": {
       "label": "Mac Â· Apple Silicon",
-      "filename": "Phrasift-0.6.2-macOS-arm64.dmg",
-      "ready": true,
-      "bytes": 724760407,
-      "sha256": "1cbec8e6e4a1324acffc21f6b89f2a42eb2102029f8e146e46912c6a79a78f5c"
+      "filename": "Phrasift-0.6.3-macOS-arm64.dmg",
+      "ready": false,
+      "bytes": 0,
+      "sha256": ""
     },
     "mac_x86_64": {
       "label": "Mac Â· Intel",
-      "filename": "Phrasift-0.6.2-macOS-x86_64.dmg",
-      "ready": true,
-      "bytes": 749572432,
-      "sha256": "710a082bbad80ceb0ac7feec3b07bfcb4a0ac1e7d388f138c8b52f9b45598aa2"
+      "filename": "Phrasift-0.6.3-macOS-x86_64.dmg",
+      "ready": false,
+      "bytes": 0,
+      "sha256": ""
     }
   },
-  "release_base": "https://github.com/sisoLeb/phrasift-releases/releases/download/v0.6.2"
+  "release_base": "https://github.com/sisoLeb/phrasift-releases/releases/download/v0.6.3"
 }

@@ -1,10 +1,10 @@
-name: Build and assemble Phrasift 0.6.2
+name: Build and assemble Phrasift 0.6.3
 'on':
   push:
     branches:
     - codex/paddle-public-release
     paths:
-    - build-input/source-0.6.2.enc
+    - build-input/source-0.6.3.enc
   workflow_dispatch: null
 permissions:
   contents: read
@@ -31,7 +31,7 @@ jobs:
     - name: Decrypt private build input
       env:
         SOURCE_KEY: ${{ secrets.PHRASIFT_BUILD_KEY_061 }}
-      run: python scripts/decrypt_build_input.py 0.6.2
+      run: python scripts/decrypt_build_input.py 0.6.3
     - name: Build and verify installed Mac app
       working-directory: private-source/Phrasift-Mac-Build-Source
       run: python scripts/prepare_macos.py --no-open
@@ -59,7 +59,7 @@ jobs:
     - name: Decrypt private build input
       env:
         SOURCE_KEY: ${{ secrets.PHRASIFT_BUILD_KEY_061 }}
-      run: python scripts/decrypt_build_input.py 0.6.2
+      run: python scripts/decrypt_build_input.py 0.6.3
     - uses: actions/download-artifact@v7
       with:
         name: windows-media
@@ -96,7 +96,7 @@ jobs:
         }
         python -c "import subprocess; p='build/windows-media/bin/ffmpeg.exe'; d=subprocess.check_output([p,'-hide_banner','-decoders'],text=True); e=subprocess.check_output([p,'-hide_banner','-encoders'],text=True); assert 'libdav1d' in d and 'h264_mf' in e, 'Required CPU media support is missing'"
         if ($LASTEXITCODE) { throw 'CPU media compatibility check failed' }
-        python -c "import hashlib,json,pathlib; p=pathlib.Path('build/windows-media'); s=p/'source'; files=[{'path':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in s.iterdir() if f.is_file()]; (s/'SOURCE-COMPLIANCE.json').write_text(json.dumps({'ffmpeg_sha256':hashlib.sha256((p/'bin/ffmpeg.exe').read_bytes()).hexdigest(),'reviewed':False,'publication_url':'https://github.com/sisoLeb/phrasift-releases/releases/download/v0.6.2/Phrasift-0.6.2-media-sources.zip','replacement_instructions':'FFmpeg and FFprobe are replaceable executables in the installed _internal/bin directory. Keep matching shared FFmpeg DLLs together. Build recipe and complete source archives are included.','sources':files},indent=2))"
+        python -c "import hashlib,json,pathlib; p=pathlib.Path('build/windows-media'); s=p/'source'; files=[{'path':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()} for f in s.iterdir() if f.is_file()]; (s/'SOURCE-COMPLIANCE.json').write_text(json.dumps({'ffmpeg_sha256':hashlib.sha256((p/'bin/ffmpeg.exe').read_bytes()).hexdigest(),'reviewed':False,'publication_url':'https://github.com/sisoLeb/phrasift-releases/releases/download/v0.6.3/Phrasift-0.6.3-media-sources.zip','replacement_instructions':'FFmpeg and FFprobe are replaceable executables in the installed _internal/bin directory. Keep matching shared FFmpeg DLLs together. Build recipe and complete source archives are included.','sources':files},indent=2))"
         if ($LASTEXITCODE) { throw 'Media source manifest failed' }
         python scripts/package_app.py --ffmpeg build/windows-media/bin/ffmpeg.exe --release-config release-config.json --source-bundle build/windows-media/source --no-zip
         if ($LASTEXITCODE) { throw 'App packaging failed' }
@@ -104,7 +104,7 @@ jobs:
         if (-not (Test-Path -LiteralPath $nsis)) { throw 'Installer compiler is missing' }
         python scripts/build_installer.py --compiler $nsis --app-dir dist/Phrasift
         if ($LASTEXITCODE) { throw 'Installer packaging failed' }
-        python -c "import shutil; shutil.make_archive('dist/Phrasift-0.6.2-Windows-media-sources','zip','build/windows-media/source')"
+        python -c "import shutil; shutil.make_archive('dist/Phrasift-0.6.3-Windows-media-sources','zip','build/windows-media/source')"
     - name: Verify installed Windows trial
       working-directory: private-source/Phrasift-Mac-Build-Source
       shell: pwsh
@@ -118,11 +118,11 @@ jobs:
         $voice.Dispose()
         & build/windows-media/bin/ffmpeg.exe -hide_banner -loglevel error -f lavfi -i color=c=0x24202c:s=640x360:r=30 -i tests/synthetic.wav -shortest -c:v mpeg4 -q:v 5 -c:a aac tests/test4.mp4
         if ($LASTEXITCODE) { throw 'Synthetic fixture generation failed' }
-        $installer = (Resolve-Path -LiteralPath 'dist/Phrasift-0.6.2-Setup.exe').Path
+        $installer = (Resolve-Path -LiteralPath 'dist/Phrasift-0.6.3-Setup.exe').Path
         $installed = Join-Path (Get-Location) 'build/installed-trial'
         $setup = Start-Process -FilePath $installer -ArgumentList '/S', '/TESTMODE=1', "/D=$installed" -Wait -PassThru -WindowStyle Hidden
         if ($setup.ExitCode -ne 0 -or !(Test-Path -LiteralPath "$installed/Phrasift.exe")) { throw 'Windows installer did not complete' }
-        foreach ($name in 'app.js','index.html','styles.css') {
+        foreach ($name in 'app.js','index.html','styles.css','studio.js','studio.css') {
           if ((Get-FileHash "ui/$name").Hash -ne (Get-FileHash "$installed/_internal/ui/$name").Hash) { throw "Installed UI differs: $name" }
         }
         python scripts/validate_windows_licensing.py --app-dir $installed --expected-store-config release-config.json
