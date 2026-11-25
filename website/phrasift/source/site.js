@@ -60,3 +60,18 @@ if(isMac)selectInstall('mac');
 document.getElementById('platform-hint').textContent=isWindows?'You’re on Windows. Choose the Windows installer.':isMac?'You’re on a Mac. Choose Apple Silicon or Intel below.':'Choose your Windows or Mac computer below.';
 document.querySelectorAll('[data-platform-card]').forEach(card=>card.classList.toggle('is-recommended',isWindows?card.dataset.platformCard==='windows':isMac&&card.dataset.platformCard.startsWith('mac_')));
 
+if (window.location.origin === 'https://phrasift.pages.dev') {
+  const endpoint = 'https://phrasift-paddle-live.samirallam730-23a.workers.dev/download-alert';
+  document.querySelectorAll('a.download-button[data-installer-version]').forEach(button => {
+    const platform = button.closest('[data-platform-card]').dataset.platformCard;
+    const body = `${platform} ${button.dataset.installerVersion}`;
+    const notify = event => {
+      if (!event.isTrusted || event.defaultPrevented || (event.type === 'auxclick' && event.button !== 1)) return;
+      // The installer link works on its own, even if the alert cannot be sent.
+      fetch(endpoint, { method: 'POST', mode: 'no-cors', credentials: 'omit', keepalive: true, body })
+        .catch(() => {});
+    };
+    button.addEventListener('click', notify);
+    button.addEventListener('auxclick', notify);
+  });
+}

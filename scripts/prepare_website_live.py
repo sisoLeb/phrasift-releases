@@ -174,7 +174,9 @@ def prepare(inputs, artifacts, source, live_config=None, commercial=False, paddl
             text = text.replace('{{RELEASE_NOTICE_BLOCK}}\n', notice_block)
         if paddle and name == '_headers':
             text = text.replace("script-src 'self';", "script-src 'self' https://cdn.paddle.com;")
-            text = text.replace("connect-src 'self';", "connect-src 'self' https://*.paddle.com; frame-src https://*.paddle.com;")
+            alerts_origin = ' https://phrasift-paddle-live.samirallam730-23a.workers.dev' if commercial else ''
+            text = text.replace("connect-src 'self';",
+                                f"connect-src 'self' https://*.paddle.com{alerts_origin}; frame-src https://*.paddle.com;")
             # Paddle sizes its injected iframe through an inline style attribute.
             text = text.replace("style-src 'self';", "style-src 'self'; style-src-attr 'unsafe-inline';")
         for key, value in values.items():
